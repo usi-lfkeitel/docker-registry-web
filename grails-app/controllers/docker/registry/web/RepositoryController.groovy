@@ -138,20 +138,6 @@ class RepositoryController {
       def digest = manifest.responseEntity.headers.getFirst('Docker-Content-Digest')
       log.info "Manifest digest: $digest"
 
-
-      log.info "Check if no other tags"
-      def tags= getTags(name)
-      if (!tags.count { it.exists }) {
-        log.info "delete blobs"
-        def blobSums = manifest.json.fsLayers?.blobSum
-        blobSums.each { dig ->
-          log.info "Deleting blob: ${digest}"
-          restService.delete("${name}/blobs/${dig}")
-        }
-        log.info "delete repo ${name}"
-        restService.delete("${name}")
-      }
-
       if (authService.checkLocalDeletePermissions(name)) {
         log.info "Deleting manifest"
         def result = restService.delete("${name}/manifests/${digest}", restService.generateAccess(name, '*'))
@@ -165,6 +151,19 @@ class RepositoryController {
             text = result.text
           }
           flash.message = "Error deleting ${name}:${tag}: ${text}"
+        }
+        log.info "Check if no other tags"
+        def tags= getTags(name)
+        log.info "tags=${tags}"
+        if (!tags.count { it.exists }) {
+          log.info "delete blobs"
+          def blobSums = manifest.json.fsLayers?.blobSum
+          blobSums.each { dig ->
+            log.info "Deleting blob: ${digest}"
+            restService.delete("${name}/blobs/${dig}")
+          }
+          log.info "delete repo ${name}"
+          restService.delete("${name}")
         }
       } else {
         log.warn 'Delete not allowed!'
