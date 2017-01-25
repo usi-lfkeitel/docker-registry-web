@@ -143,6 +143,7 @@ class RepositoryController {
 
       if (authService.checkLocalDeletePermissions(name)) {
         log.info "Deleting manifest"
+        // [ Chen ] : comment out original delete method as its only delete tag
         def url = "https://mo-70b603b3c.mo.sap.corp:8443/jenkins/job/DeleteImageFromRegistry/buildWithParameters?token=SERVICE&IMG_REPO=${name}&IMG_TAG=${tag}"
         restService.post(url)
         // def result = restService.delete("${name}/manifests/${digest}", restService.generateAccess(name, '*'))
