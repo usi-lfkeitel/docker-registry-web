@@ -55,7 +55,7 @@ class RepositoryController {
     if (!tags.count { it.exists }) {
       log.warn "Repo name: ${name} is empty, redirecting to home page"
       def url = "https://mo-70b603b3c.mo.sap.corp:8443/jenkins/job/DeleteImageFromRegistry/buildWithParameters?token=SERVICE&IMG_REPO=${name}"
-      def out = request(HttpMethod.POST, url, headers)      
+      restService.post(url)      
       redirect action: 'index'
     } else {
       def deletePermitted = authService.checkLocalDeletePermissions(name)
@@ -144,7 +144,7 @@ class RepositoryController {
       if (authService.checkLocalDeletePermissions(name)) {
         log.info "Deleting manifest"
         def url = "https://mo-70b603b3c.mo.sap.corp:8443/jenkins/job/DeleteImageFromRegistry/buildWithParameters?token=SERVICE&IMG_REPO=${name}&IMG_TAG=${tag}"
-        restService.request(HttpMethod.POST, url, headers)
+        restService.post(url)
         // def result = restService.delete("${name}/manifests/${digest}", restService.generateAccess(name, '*'))
         // if (!result.deleted) {
         //   def text = ''
