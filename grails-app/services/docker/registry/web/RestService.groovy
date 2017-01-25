@@ -43,7 +43,7 @@ class RestService {
   }
 
   def delete(String path, List access) {
-    def values = ${path}.split('/manifests')    
+    def values = path.split('/manifests')    
     def image = values[0]
     log.info "Image is ${image}"
     def res = request(HttpMethod.DELETE, "${url}/${path}", headers, access)
