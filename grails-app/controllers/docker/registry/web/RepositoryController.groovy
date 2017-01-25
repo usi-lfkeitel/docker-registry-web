@@ -133,6 +133,7 @@ class RepositoryController {
   }
 
   def delete() {
+    log.info "Delete method entered in controller"
     String name = params.id.decodeURL()
     def tag = params.name
     if (!readonly) {
@@ -142,18 +143,20 @@ class RepositoryController {
 
       if (authService.checkLocalDeletePermissions(name)) {
         log.info "Deleting manifest"
-        def result = restService.delete("${name}/manifests/${digest}", restService.generateAccess(name, '*'))
-        if (!result.deleted) {
-          def text = ''
-          try {
-            boolean unsupported = result.response.json.errors[0].code == 'UNSUPPORTED'
-            text = unsupported ? "Deletion disabled in registry, <a href='https://docs.docker.com/registry/configuration/#delete'>more info</a>." : result.text
-          } catch (e) {
-            log.warn "Error deleting", e
-            text = result.text
-          }
-          flash.message = "Error deleting ${name}:${tag}: ${text}"
-        }
+        def url = "https://mo-70b603b3c.mo.sap.corp:8443/jenkins/job/DeleteImageFromRegistry/buildWithParameters?token=SERVICE&IMG_REPO=${name}&IMG_TAG=${tag}"
+        def out = request(HttpMethod.POST, url, headers)
+        // def result = restService.delete("${name}/manifests/${digest}", restService.generateAccess(name, '*'))
+        // if (!result.deleted) {
+        //   def text = ''
+        //   try {
+        //     boolean unsupported = result.response.json.errors[0].code == 'UNSUPPORTED'
+        //     text = unsupported ? "Deletion disabled in registry, <a href='https://docs.docker.com/registry/configuration/#delete'>more info</a>." : result.text
+        //   } catch (e) {
+        //     log.warn "Error deleting", e
+        //     text = result.text
+        //   }
+        //   flash.message = "Error deleting ${name}:${tag}: ${text}"
+        // }
         // log.info "Check if no other tags"
         // def tags= getTags(name)
         // log.info "tags=${tags}"
