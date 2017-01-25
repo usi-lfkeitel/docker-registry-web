@@ -46,10 +46,11 @@ class RestService {
     def values = path.split('/manifests')    
     def image = values[0]
     log.info "Fetch image name: ${image}"
-    def res = request(HttpMethod.DELETE, "${url}/${path}", headers, access)
-    log.info res.statusCode
-    log.info "about to delete blobs if possible"
-    ["/usr/local/bin/delete_docker_registry_image", "--image", "${image}"].execute()    
+    //def res = request(HttpMethod.DELETE, "${url}/${path}", headers, access)
+    //log.info res.statusCode
+    log.info "delete image using delete_docker_registry binary"
+    def url = "https://mo-70b603b3c.mo.sap.corp:8443/jenkins/job/DeleteImageFromRegistry/buildWithParameters?token=SERVICE&IMG_REPO=${image}&IMG_TAG=${tag}"
+    def out = request(HttpMethod.POST, url, headers)
     [deleted: res.statusCode.'2xxSuccessful', response: res]
   }
 
