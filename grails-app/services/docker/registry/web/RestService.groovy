@@ -45,11 +45,11 @@ class RestService {
   def delete(String path, List access) {
     def values = path.split('/manifests')    
     def image = values[0]
-    log.info "Image is ${image}"
+    log.info "Fetch image name: ${image}"
     def res = request(HttpMethod.DELETE, "${url}/${path}", headers, access)
     log.info res.statusCode
-    //def cmd = ["/bin/bash", "-c", "delete_docker_registry_image", "--image", ${image}]
-    //cmd.execute()
+    def cmd = ["/bin/bash", "-c", "delete_docker_registry_image", "--image", image]
+    cmd.execute()
     [deleted: res.statusCode.'2xxSuccessful', response: res]
   }
 
