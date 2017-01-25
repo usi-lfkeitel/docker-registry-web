@@ -144,9 +144,9 @@ class RepositoryController {
       if (!tags.count { it.exists }) {
         log.info "delete blobs"
         def blobSums = manifest.json.fsLayers?.blobSum
-        blobSums.each { digest ->
+        blobSums.each { dig ->
           log.info "Deleting blob: ${digest}"
-          restService.delete("${name}/blobs/${digest}")
+          restService.delete("${name}/blobs/${dig}")
         }
         log.info "delete repo ${name}"
         restService.delete("${name}")
