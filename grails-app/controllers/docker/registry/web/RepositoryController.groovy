@@ -152,19 +152,19 @@ class RepositoryController {
           }
           flash.message = "Error deleting ${name}:${tag}: ${text}"
         }
-        log.info "Check if no other tags"
-        def tags= getTags(name)
-        log.info "tags=${tags}"
-        if (!tags.count { it.exists }) {
-          log.info "delete blobs"
-          def blobSums = manifest.json.fsLayers?.blobSum
-          blobSums.each { dig ->
-            log.info "Deleting blob: ${digest}"
-            restService.delete("${name}/blobs/${dig}")
-          }
-          log.info "delete repo ${name}"
-          restService.delete("${name}")
-        }
+        // log.info "Check if no other tags"
+        // def tags= getTags(name)
+        // log.info "tags=${tags}"
+        // if (!tags.count { it.exists }) {
+        //   log.info "delete blobs"
+        //   def blobSums = manifest.json.fsLayers?.blobSum
+        //   blobSums.each { dig ->
+        //     log.info "Deleting blob: ${digest}"
+        //     restService.delete("${name}/blobs/${dig}")
+        //   }
+        //   log.info "delete repo ${name}"
+        //   restService.delete("${name}")
+        // }
       } else {
         log.warn 'Delete not allowed!'
         flash.message = "Delete not allowed!"
