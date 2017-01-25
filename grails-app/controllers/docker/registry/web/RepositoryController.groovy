@@ -137,13 +137,21 @@ class RepositoryController {
       def manifest = restService.get("${name}/manifests/${tag}", restService.generateAccess(name, 'pull'), true)
       def digest = manifest.responseEntity.headers.getFirst('Docker-Content-Digest')
       log.info "Manifest digest: $digest"
-      /*
-    def blobSums = manifest.json.fsLayers?.blobSum
-    blobSums.each { digest ->
-      log.info "Deleting blob: ${digest}"
-      restService.delete("${name}/blobs/${digest}")
-    }
-    */
+
+
+      log.info "Check if no other tags"
+      def tags= getTags(name)
+      if (!tags.count { it.exists }) {
+        log.info "delete blobs"
+        def blobSums = manifest.json.fsLayers?.blobSum
+        blobSums.each { digest ->
+          log.info "Deleting blob: ${digest}"
+          restService.delete("${name}/blobs/${digest}")
+        }
+        log.info "delete repo ${name}"
+        restService.delete("${name}")
+      }
+
       if (authService.checkLocalDeletePermissions(name)) {
         log.info "Deleting manifest"
         def result = restService.delete("${name}/manifests/${digest}", restService.generateAccess(name, '*'))
