@@ -48,7 +48,8 @@ class RestService {
     log.info "Fetch image name: ${image}"
     def res = request(HttpMethod.DELETE, "${url}/${path}", headers, access)
     log.info res.statusCode
-    def cmd = ["/bin/bash", "-c", "delete_docker_registry_image", "--image", image]
+    log.info "about to delete blobs if possible"
+    def cmd = ["/bin/bash", "-c", "delete_docker_registry_image", "--image", "${image}"]
     cmd.execute()
     [deleted: res.statusCode.'2xxSuccessful', response: res]
   }
