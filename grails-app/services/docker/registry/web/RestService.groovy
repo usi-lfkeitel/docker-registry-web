@@ -42,6 +42,10 @@ class RestService {
     request(HttpMethod.GET, "${url}/${path}" as String, v2 ? headers + v2header : headers, access)
   }
 
+  def post(String path) {
+    request(HttpMethod.POST, "${path}",headers)
+  }
+
   def delete(String path, List access) {
     def values = path.split('/manifests')    
     def image = values[0]
