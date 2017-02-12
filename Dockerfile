@@ -1,4 +1,4 @@
-FROM    ubuntu:14.04
+FROM ubuntu:14.04
 
 ENV DEBIAN_FRONTEND noninteractive
 #prevent apt from installing recommended packages
