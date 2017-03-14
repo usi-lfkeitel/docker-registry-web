@@ -54,8 +54,6 @@ class RepositoryController {
     def tags = getTags(name)
     if (!tags.count { it.exists }) {
       log.warn "Repo name: ${name} is empty, redirecting to home page"
-      //def url = "https://mo-70b603b3c.mo.sap.corp:8443/jenkins/job/DeleteImageFromRegistry/buildWithParameters?token=SERVICE&IMG_REPO=${name}"
-      //restService.post(url)      
       redirect action: 'index'
     } else {
       def deletePermitted = authService.checkLocalDeletePermissions(name)
@@ -143,34 +141,18 @@ class RepositoryController {
 
       if (authService.checkLocalDeletePermissions(name)) {
         log.info "Deleting manifest"
-        // [ Chen ] : comment out original delete method as its only delete tag
-        def url = "https://mo-70b603b3c.mo.sap.corp:8443/jenkins/job/DeleteImageFromRegistry/buildWithParameters?token=SERVICE&IMG_REPO=${name}&IMG_TAG=${tag}"
-        restService.post(url)
-        // def result = restService.delete("${name}/manifests/${digest}", restService.generateAccess(name, '*'))
-        // if (!result.deleted) {
-        //   def text = ''
-        //   try {
-        //     boolean unsupported = result.response.json.errors[0].code == 'UNSUPPORTED'
-        //     text = unsupported ? "Deletion disabled in registry, <a href='https://docs.docker.com/registry/configuration/#delete'>more info</a>." : result.text
-        //   } catch (e) {
-        //     log.warn "Error deleting", e
-        //     text = result.text
-        //   }
-        //   flash.message = "Error deleting ${name}:${tag}: ${text}"
-        // }
-        // log.info "Check if no other tags"
-        // def tags= getTags(name)
-        // log.info "tags=${tags}"
-        // if (!tags.count { it.exists }) {
-        //   log.info "delete blobs"
-        //   def blobSums = manifest.json.fsLayers?.blobSum
-        //   blobSums.each { dig ->
-        //     log.info "Deleting blob: ${digest}"
-        //     restService.delete("${name}/blobs/${dig}")
-        //   }
-        //   log.info "delete repo ${name}"
-        //   restService.delete("${name}")
-        // }
+        def result = restService.delete("${name}/manifests/${digest}", restService.generateAccess(name, '*'))
+        if (!result.deleted) {
+          def text = ''
+          try {
+            boolean unsupported = result.response.json.errors[0].code == 'UNSUPPORTED'
+            text = unsupported ? "Deletion disabled in registry, <a href='https://docs.docker.com/registry/configuration/#delete'>more info</a>." : result.text
+          } catch (e) {
+            log.warn "Error deleting", e
+            text = result.text
+          }
+          flash.message = "Error deleting ${name}:${tag}: ${text}"
+        }
       } else {
         log.warn 'Delete not allowed!'
         flash.message = "Delete not allowed!"

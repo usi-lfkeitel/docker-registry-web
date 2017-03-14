@@ -1,16 +1,9 @@
 FROM ubuntu:14.04
 
 ENV DEBIAN_FRONTEND noninteractive
-#prevent apt from installing recommended packages
-RUN echo 'APT::Install-Recommends "false";' > /etc/apt/apt.conf.d/docker-no-recommends && \
-    echo 'APT::Install-Suggests "false";' >> /etc/apt/apt.conf.d/docker-no-recommends
-RUN echo "Acquire::https::proxy \"http://proxy.wdf.sap.corp:8080/\";" > /etc/apt/apt.conf \
-    && echo "Acquire::http::proxy \"http://proxy.wdf.sap.corp:8080/\";" >> /etc/apt/apt.conf \
-	&& export https_proxy="$http_proxy" \
-	&& export http_proxy="$http_proxy"
 
 # Install java and tomcat
-RUN     apt-get update && apt-get install -y tomcat7 openjdk-7-jdk libyaml-perl libfile-slurp-perl && \
+RUN     apt-get update && apt-get install -y --no-install-recommends tomcat7 openjdk-7-jdk libyaml-perl libfile-slurp-perl && \
         rm -rf /var/lib/tomcat7/webapps/* && \
         rm -rf /var/lib/apt/lists/*
 
@@ -33,13 +26,10 @@ RUN     mkdir $CATALINA_BASE/temp && \
         mkdir -p $CATALINA_HOME/server/classes && \
         mkdir -p $CATALINA_HOME/shared/classes
 
-ENV http_proxy http://proxy.wdf.sap.corp:8080
-ENV https_proxy http://proxy.wdf.sap.corp:8080
 # Run grails wrapper to install grails and project dependencies
 WORKDIR /usr/local/app
 COPY     grailsw application.properties ./
 COPY     wrapper ./wrapper
-COPY wrapper /root/.grails/wrapper
 COPY     grails-app/conf/BuildConfig.groovy ./grails-app/conf/
 RUN     ./grailsw refresh-dependencies
 
