@@ -42,10 +42,6 @@ class RestService {
     request(HttpMethod.GET, "${url}/${path}" as String, v2 ? headers + v2header : headers, access)
   }
 
-  def post(String path) {
-    request(HttpMethod.POST, "${path}",headers)
-  }
-
   def delete(String path, List access) {
     def res = request(HttpMethod.DELETE, "${url}/${path}", headers, access)
     log.info res.statusCode
