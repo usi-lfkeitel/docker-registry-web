@@ -39,7 +39,7 @@ class AuthController {
       scopeList.collect { scope ->
         log.info "Requested scope: $scope"
         String ip = request.getRemoteAddr()
-        List actions = authService.getScopePermissions(scope, aclList, ip)
+        List actions = authService.getScopePermissions(scope, aclList, ip, authResult.username)
         scope.actions = actions
         log.info "Granted scope: ${actions}"
         access << scope

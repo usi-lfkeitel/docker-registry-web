@@ -53,10 +53,10 @@ class AuthService {
     def acls = roles.collect { role ->
       RoleAccess.findAllByRole(role).acl
     }.flatten()
-    new AuthResult(roles, acls)
+    new AuthResult(roles, acls, username)
   }
 
-  List getScopePermissions(Map scope, Collection aclList, String ip) {
+  List getScopePermissions(Map scope, Collection aclList, String ip, String username) {
     def actions = []
     def typeValid = scope.type == 'repository'
     if (aclList && scope && typeValid) {
@@ -67,7 +67,9 @@ class AuthService {
       log.info("Repo name=${name}, ip=${ip}")
       //check acls
       actions = aclList.collect { AccessControl acl ->
-        if (GlobMatcher.check(acl.name, name) && GlobMatcher.check(acl.ip, ip))
+        String aclName = replaceVars(acl.name, username)
+        log.info("ACL Name=${aclName}")
+        if (GlobMatcher.check(aclName, name) && GlobMatcher.check(acl.ip, ip))
           return acl.level
         else
           return AccessLevel.NONE
@@ -77,11 +79,16 @@ class AuthService {
     actions
   }
 
+  String replaceVars(String str, String username) {
+    str = str.replace("\${username}", username)
+    return str
+  }
+
   List getCurrentUserPermissions(String name) {
     User user = springSecurityService.currentUser
     log.info "Checking current user permissions for user=${user.username}, repo=${name}"
     def aclList = user.authorities.acls.flatten()
-    getScopePermissions([type: 'repository', name: name], aclList, 'local')
+    getScopePermissions([type: 'repository', name: name], aclList, 'local', user.getUsername())
   }
 
   //returns true if delete allowed to current user

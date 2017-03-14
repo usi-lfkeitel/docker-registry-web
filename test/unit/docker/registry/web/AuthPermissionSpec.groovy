@@ -15,9 +15,9 @@ class AuthPermissionSpec extends Specification {
                 new AccessControl(ip: '*', name: '*hello*', level: AccessLevel.PUSH)]
     def ip = '127.0.0.1'
     expect:
-    service.getScopePermissions(generateScope('ubuntu'), acls, ip) == []
-    service.getScopePermissions(generateScope('ubuntu/hello'), acls, ip) == []
-    service.getScopePermissions(generateScope('hello/ubuntu'), acls, ip) == []
+    service.getScopePermissions(generateScope('ubuntu'), acls, ip, '') == []
+    service.getScopePermissions(generateScope('ubuntu/hello'), acls, ip, '') == []
+    service.getScopePermissions(generateScope('hello/ubuntu'), acls, ip, '') == []
   }
 
   void testDenyIp() {
@@ -25,10 +25,10 @@ class AuthPermissionSpec extends Specification {
     def acls = [new AccessControl(ip: '192.*', name: '**', level: AccessLevel.PULL),
                 new AccessControl(ip: '192.168.*', name: 'hello/**', level: AccessLevel.PUSH)]
     expect:
-    service.getScopePermissions(generateScope('hello/hello'), acls, '127.0.0.1') == []
-    service.getScopePermissions(generateScope('hello'), acls, '192.0.0.1') == AccessLevel.PULL.actions
-    service.getScopePermissions(generateScope('hello/hello'), acls, '192.0.0.1') == AccessLevel.PULL.actions
-    service.getScopePermissions(generateScope('hello/hello'), acls, '192.168.0.1') == AccessLevel.PUSH.actions
+    service.getScopePermissions(generateScope('hello/hello'), acls, '127.0.0.1', '') == []
+    service.getScopePermissions(generateScope('hello'), acls, '192.0.0.1', '') == AccessLevel.PULL.actions
+    service.getScopePermissions(generateScope('hello/hello'), acls, '192.0.0.1', '') == AccessLevel.PULL.actions
+    service.getScopePermissions(generateScope('hello/hello'), acls, '192.168.0.1', '') == AccessLevel.PUSH.actions
   }
 
   void testScopeAllow() {
@@ -36,9 +36,9 @@ class AuthPermissionSpec extends Specification {
     def acls = [new AccessControl(ip: '*', name: 'hello*', level: AccessLevel.PUSH)]
     def ip = '127.0.0.1'
     expect:
-    service.getScopePermissions(generateScope('hello'), acls, ip) == AccessLevel.PUSH.actions
-    service.getScopePermissions(generateScope('hello-world-1'), acls, ip) == AccessLevel.PUSH.actions
-    service.getScopePermissions(generateScope('hello.ubuntu'), acls, ip) == AccessLevel.PUSH.actions
+    service.getScopePermissions(generateScope('hello'), acls, ip, '') == AccessLevel.PUSH.actions
+    service.getScopePermissions(generateScope('hello-world-1'), acls, ip, '') == AccessLevel.PUSH.actions
+    service.getScopePermissions(generateScope('hello.ubuntu'), acls, ip, '') == AccessLevel.PUSH.actions
 
   }
 
@@ -52,11 +52,11 @@ class AuthPermissionSpec extends Specification {
     ]
     def ip = '127.0.0.1'
     expect:
-    service.getScopePermissions(generateScope('max/ubuntu'), acls, ip) == AccessLevel.PUSH.actions
-    service.getScopePermissions(generateScope('general/ubuntu'), acls, ip) == AccessLevel.PULL.actions
-    service.getScopePermissions(generateScope('single_level'), acls, ip) == AccessLevel.PUSH.actions
-    service.getScopePermissions(generateScope('single'), acls, ip) == []
-    service.getScopePermissions(generateScope('test/test'), acls, ip) == AccessLevel.PUSH.actions
+    service.getScopePermissions(generateScope('max/ubuntu'), acls, ip, '') == AccessLevel.PUSH.actions
+    service.getScopePermissions(generateScope('general/ubuntu'), acls, ip, '') == AccessLevel.PULL.actions
+    service.getScopePermissions(generateScope('single_level'), acls, ip, '') == AccessLevel.PUSH.actions
+    service.getScopePermissions(generateScope('single'), acls, ip, '') == []
+    service.getScopePermissions(generateScope('test/test'), acls, ip, '') == AccessLevel.PUSH.actions
   }
 
   void testUiDelete() {
@@ -64,8 +64,20 @@ class AuthPermissionSpec extends Specification {
     def acls = [new AccessControl(ip: '*', name: 'max/*', level: AccessLevel.UI_DELETE)]
     def ip = '127.0.0.1'
     expect:
-    service.getScopePermissions(generateScope('max/ubuntu'), acls, ip) == AccessLevel.UI_DELETE.actions
-    service.getScopePermissions(generateScope('test/test'), acls, ip).empty
+    service.getScopePermissions(generateScope('max/ubuntu'), acls, ip, '') == AccessLevel.UI_DELETE.actions
+    service.getScopePermissions(generateScope('test/test'), acls, ip, '').empty
+  }
+
+  void testScopeWithACLUsername() {
+    given:
+    def acls = [new AccessControl(ip: '*', name: '${username}/*', level: AccessLevel.PUSH)]
+    def ip = '127.0.0.1'
+    expect:
+    service.getScopePermissions(generateScope('hello'), acls, ip, '') == []
+    service.getScopePermissions(generateScope('hello/world'), acls, ip, 'hello') == AccessLevel.PUSH.actions
+    service.getScopePermissions(generateScope('hello/world'), acls, ip, 'hello2') == []
+    service.getScopePermissions(generateScope('hello2/world'), acls, ip, 'hello') == []
+
   }
 
   def generateScope(String name) {
